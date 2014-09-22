@@ -31,10 +31,14 @@ typedef std::unordered_map<Key, int, KeyHash, KeyEqual> LocusDist;
 
 class Locus {
     friend std::ostream& operator<<(std::ostream& os, const Locus& a) {
-        os << a.name << ": ";
+        os << "########## " << a.name << "##########\nLocus Distribution:\n";
         for (LocusDistPoint p : a.locusDist) {
             os << "[" << p.first.first << ", " << p.first.second
-                << ": " << p.second <<"],";
+                << ": " << p.second <<"], ";
+        }
+        os << "\nAlleles:\n";
+        for (std::pair<int, int> allele : a.alleles) {
+            os << "[" << allele.first << ": " << allele.second << "], ";
         }
         return os;
     }
@@ -44,10 +48,15 @@ class Locus {
         bool operator==(const Locus& locus) const { return name == locus.name; }
 
         std::string getName() const { return name; }
-        void addLocusPeaks(Key peak) { locusDist[peak]++; }
+        void addLocusPeaks(Key peak) {
+            locusDist[peak]++;
+            alleles[peak.first]++;
+            alleles[peak.second]++;
+        }
     private:
         std::string name;
         LocusDist locusDist;
+        std::unordered_map<int, int> alleles;
 };
 
 typedef std::vector<Locus> Set;

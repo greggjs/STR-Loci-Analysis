@@ -7,14 +7,8 @@
 
 typedef std::vector<Sample> SampleList;
 
-int main(int argc, char* argv[]) {
-    float pSignificance = atof(argv[2]);
-    std::ifstream inFile(argv[1], std::ios::binary);
-
+SampleList populateLocusMapAndSampleList(LocusMap& locusMap, std::ifstream& inFile) {
     std::string line;
-    getline(inFile, line, '\r');
-    LocusMap locusMap(line);
-
     SampleList sampleList;
     while(getline(inFile, line, '\r')) {
         Sample curr(line, locusMap);
@@ -25,7 +19,18 @@ int main(int argc, char* argv[]) {
         }
         sampleList.push_back(curr);
     }
-    std::cout << sampleList[0] << std::endl;
+    return sampleList;
+}
+
+int main(int argc, char* argv[]) {
+    float pSignificance = atof(argv[2]);
+    std::ifstream inFile(argv[1], std::ios::binary);
+
+    std::string line;
+    getline(inFile, line, '\r');
+    LocusMap locusMap(line);
+    SampleList sampleList = populateLocusMapAndSampleList(locusMap, inFile);
+
     std::cout << locusMap << std::endl;
 
     return 0;
