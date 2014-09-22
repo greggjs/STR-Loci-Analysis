@@ -1,16 +1,9 @@
-#include <string>
-#include <sstream>
-#include <utility>
-#include <iterator>
-#include <set>
-#include <algorithm>
 #include <cmath>
-#include <unordered_map>
 #include "LocusMap.h"
 
 typedef std::pair<int, int> Peaks;
-typedef std::pair<std::string, Peaks> LocusPeak;
-typedef std::unordered_map<std::string, Peaks> LocusPeaks;
+typedef std::pair<std::string, Key> LocusPeak;
+typedef std::unordered_map<std::string, Key> LocusPeaks;
 
 class Sample {
     friend std::ostream& operator<<(std::ostream& os, const Sample& sample) {
@@ -40,7 +33,8 @@ class Sample {
                 if (!getline(lineStream, curr2, ',')) {
                     break;
                 }
-                Peaks currPeaks(atoi(curr1.c_str()), atoi(curr2.c_str()));
+                auto minAndMax = std::minmax({atoi(curr1.c_str()), atoi(curr2.c_str())});
+                Key currPeaks = { minAndMax.first, minAndMax.second };
                 allelePeaks[(*iter).getName()] = currPeaks;
                 iter++;
             }

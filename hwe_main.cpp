@@ -20,8 +20,7 @@ int main(int argc, char* argv[]) {
         Sample curr(line, locusMap);
         int i = 0;
         for (LocusPeak p : curr.getLocusPeaks()) {
-            locusMap[i].addLocusPeak(p.second.first);
-            locusMap[i].addLocusPeak(p.second.second);
+            locusMap[i].addLocusPeaks(p.second);
             i++;
         }
         sampleList.push_back(curr);

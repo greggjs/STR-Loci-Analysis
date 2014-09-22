@@ -1,18 +1,40 @@
 #include <string>
+#include <utility>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <unordered_map>
 
-typedef std::unordered_map<int, int> LocusDist;
+struct Key {
+    int first;
+    int second;
+};
+
+struct KeyHash {
+    std::size_t operator()(const Key& k) const {
+        return std::hash<int>()(k.first) ^
+            (std::hash<int>()(k.second) << 1);
+    }
+};
+
+struct KeyEqual {
+    bool operator()(const Key& lhs, const Key& rhs) const {
+        return lhs.first == rhs.first && lhs.second == rhs.second;
+    }
+};
+
+typedef std::pair<Key, int> LocusDistPoint;
+typedef std::unordered_map<Key, int, KeyHash, KeyEqual> LocusDist;
 
 class Locus {
     friend std::ostream& operator<<(std::ostream& os, const Locus& a) {
         os << a.name << ": ";
-        for (std::pair<int, int> p : a.locusDist) {
-            os << "[" << p.first << ": " << p.second <<"],";
+        for (LocusDistPoint p : a.locusDist) {
+            os << "[" << p.first.first << ", " << p.first.second
+                << ": " << p.second <<"],";
         }
         return os;
     }
@@ -22,7 +44,7 @@ class Locus {
         bool operator==(const Locus& locus) const { return name == locus.name; }
 
         std::string getName() const { return name; }
-        void addLocusPeak(int peak) { locusDist[peak]++; }
+        void addLocusPeaks(Key peak) { locusDist[peak]++; }
     private:
         std::string name;
         LocusDist locusDist;
