@@ -22,6 +22,12 @@ SampleList populateLocusMapAndSampleList(LocusMap& locusMap, std::ifstream& inFi
     return sampleList;
 }
 
+void calculateLocusProbs(LocusMap& locusMap, int sampleSize) {
+    for (int i = 0; i < locusMap.size(); i++) {
+        locusMap[i].calculateLocusProbs(sampleSize);
+    }
+}
+
 int main(int argc, char* argv[]) {
     float pSignificance = atof(argv[2]);
     std::ifstream inFile(argv[1], std::ios::binary);
@@ -30,8 +36,9 @@ int main(int argc, char* argv[]) {
     getline(inFile, line, '\r');
     LocusMap locusMap(line);
     SampleList sampleList = populateLocusMapAndSampleList(locusMap, inFile);
+    calculateLocusProbs(locusMap, sampleList.size());
+    //std::cout << locusMap << std::endl;
 
-    std::cout << locusMap << std::endl;
 
     return 0;
 }

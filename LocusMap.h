@@ -27,7 +27,9 @@ struct KeyEqual {
 };
 
 typedef std::pair<Key, int> LocusDistPoint;
+typedef std::pair<Key, double> LocusProbPoint;
 typedef std::unordered_map<Key, int, KeyHash, KeyEqual> LocusDist;
+typedef std::unordered_map<Key, double, KeyHash, KeyEqual> LocusProb;
 
 class Locus {
     friend std::ostream& operator<<(std::ostream& os, const Locus& a) {
@@ -53,10 +55,19 @@ class Locus {
             alleles[peak.first]++;
             alleles[peak.second]++;
         }
+
+        LocusProb calculateLocusProbs(double sampleSize) {
+            for (LocusDistPoint point : locusDist) {
+                locusProb[point.first] = (double)point.second / sampleSize;
+            }
+            return locusProb;
+        }
     private:
         std::string name;
         LocusDist locusDist;
         std::unordered_map<int, int> alleles;
+        LocusProb locusProb;
+
 };
 
 typedef std::vector<Locus> Set;
@@ -87,6 +98,7 @@ class LocusMap {
         Locus& operator[](int index) { return locusSet.at(index); }
 
         Set& getLocusSet() { return locusSet; }
+        int size() { return locusSet.size(); }
 
     private:
         Set locusSet;
