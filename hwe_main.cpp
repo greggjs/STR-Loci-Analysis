@@ -25,7 +25,9 @@ SampleList populateLocusMapAndSampleList(LocusMap& locusMap, std::ifstream& inFi
 void calculateLocusProbs(LocusMap& locusMap, int sampleSize) {
     for (int i = 0; i < locusMap.size(); i++) {
         locusMap[i].calculateLocusProbs(sampleSize);
+        locusMap[i].calculateAlleleProbs(sampleSize);
     }
+    locusMap[0].printProbs();
 }
 
 int main(int argc, char* argv[]) {
