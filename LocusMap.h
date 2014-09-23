@@ -31,7 +31,7 @@ typedef std::unordered_map<Key, int, KeyHash, KeyEqual> LocusDist;
 
 class Locus {
     friend std::ostream& operator<<(std::ostream& os, const Locus& a) {
-        os << "########## " << a.name << "##########\nLocus Distribution:\n";
+        os << "########## " << a.name << " ##########\nLocus Distribution:\n";
         for (LocusDistPoint p : a.locusDist) {
             os << "[" << p.first.first << ", " << p.first.second
                 << ": " << p.second <<"], ";
