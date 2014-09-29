@@ -31,6 +31,10 @@ void calculateLocusProbs(LocusMap& locusMap, int sampleSize) {
 }
 
 int main(int argc, char* argv[]) {
+    if (argc < 3) {
+        std::cerr << "Need 2 args (file and pSignificance)." << std::endl;
+        return 1;
+    }
     float pSignificance = atof(argv[2]);
     std::ifstream inFile(argv[1], std::ios::binary);
 

@@ -76,7 +76,7 @@ class Locus {
                     Key allelePoint = {allele.first, i};
                     sum += locusProb[allelePoint];
                 }
-                alleleProb[allele.first] =  locusProb[currPoint] + 0.5 * sum;
+                alleleProb[allele.first] = locusProb[currPoint] + sum;
             }
             return alleleProb;
         }
@@ -87,13 +87,12 @@ class Locus {
                 std::cout << "[" << p.first.first << ", " << p.first.second
                     << ": " << p.second <<"], ";
             }
-            std::cout << "\nAlleles:\n";
-            double sum = 0;
+            std::cout << sum << "\nAlleles:\n";
             for (AlleleProbPoint allele : alleleProb) {
                 std::cout << "[" << allele.first << ": " << allele.second << "], ";
                 sum += allele.second;
             }
-            std::cout << sum << "\n";
+            std::cout << std::endl;
         }
     private:
         std::string name;
