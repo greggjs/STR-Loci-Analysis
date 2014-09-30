@@ -87,10 +87,8 @@ class Locus {
                 std::cout << "[" << p.first.first << ", " << p.first.second
                     << ": " << p.second <<"], ";
             }
-            std::cout << sum << "\nAlleles:\n";
             for (AlleleProbPoint allele : alleleProb) {
                 std::cout << "[" << allele.first << ": " << allele.second << "], ";
-                sum += allele.second;
             }
             std::cout << std::endl;
         }
