@@ -28,8 +28,12 @@ struct KeyEqual {
 
 typedef std::pair<Key, int> LocusDistPoint;
 typedef std::pair<Key, double> LocusProbPoint;
+typedef std::pair<int, int> AlleleDistPoint;
+typedef std::pair<int, double> AlleleProbPoint;
 typedef std::unordered_map<Key, int, KeyHash, KeyEqual> LocusDist;
 typedef std::unordered_map<Key, double, KeyHash, KeyEqual> LocusProb;
+typedef std::unordered_map<int, int> AlleleDist;
+typedef std::unordered_map<int, double> AlleleProb;
 
 class Locus {
     friend std::ostream& operator<<(std::ostream& os, const Locus& a) {
@@ -39,7 +43,7 @@ class Locus {
                 << ": " << p.second <<"], ";
         }
         os << "\nAlleles:\n";
-        for (std::pair<int, int> allele : a.alleles) {
+        for (AlleleDistPoint allele : a.alleles) {
             os << "[" << allele.first << ": " << allele.second << "], ";
         }
         return os;
@@ -62,11 +66,51 @@ class Locus {
             }
             return locusProb;
         }
+
+	AlleleProb calculateAlleleProbs(double sampleSize) {
+	  int highestAllelePeak = this->getHighestAllelePeak();
+	  for (AlleleDistPoint allele : alleles) {
+	    Key currPoint = { allele.first, allele.first };
+	    double sum = 0;
+	    for (int i = allele.first + 1; i <= highestAllelePeak; i++) {
+	      Key allelePoint = {allele.first, i};
+	      sum += locusProb[allelePoint];
+	    }
+	    alleleProb[allele.first] = locusProb[currPoint] + 0.5 * sum;
+	  }
+	  return alleleProb;
+	}
+
+	void printProbs() {
+	  std::cout << "########## " << name << " ##########\nLocus Distribution:\n";
+	  for (LocusProbPoint p : locusProb) {
+	    std::cout << "[" << p.first.first << ", " << p.first.second
+		      << ": " << p.second << "], ";
+	  }
+	  std::cout << "\nAlleles:\n";
+	  double sum = 0;
+	  for (AlleleProbPoint allele : alleleProb) {
+	    std::cout << "[" << allele.first << ": " << allele.second << "], ";
+	    sum += allele.second;
+	  }
+	  std::cout << sum << "\n";
+	}
+
     private:
         std::string name;
         LocusDist locusDist;
-        std::unordered_map<int, int> alleles;
+        AlleleDist alleles;
         LocusProb locusProb;
+	AlleleProb alleleProb;
+
+	int getHighestAllelePeak() {
+	  std::vector<AlleleDistPoint> alleleVector(alleles.begin(), alleles.end());
+	  std::sort(alleleVector.begin(), alleleVector.end(),
+	  	    [](const AlleleDistPoint& a, const AlleleDistPoint& b){ 
+		      return a.first > b.first; 
+		    });
+	  return alleleVector.at(0).first;
+	}
 
 };
 

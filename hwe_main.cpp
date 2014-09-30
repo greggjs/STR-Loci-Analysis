@@ -29,7 +29,7 @@ void calculateLocusProbs(LocusMap& locusMap, int sampleSize) {
 }
 
 int main(int argc, char* argv[]) {
-    float pSignificance = atof(argv[2]);
+  //float pSignificance = atof(argv[2]);
     std::ifstream inFile(argv[1], std::ios::binary);
 
     std::string line;
