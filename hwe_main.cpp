@@ -10,7 +10,7 @@ typedef std::vector<Sample> SampleList;
 SampleList populateLocusMapAndSampleList(LocusMap& locusMap, std::ifstream& inFile) {
     std::string line;
     SampleList sampleList;
-    while(getline(inFile, line, '\r')) {
+    while (getline(inFile, line, '\r')) {
         Sample curr(line, locusMap);
         int i = 0;
         for (LocusPeak p : curr.getLocusPeaks()) {
@@ -22,23 +22,21 @@ SampleList populateLocusMapAndSampleList(LocusMap& locusMap, std::ifstream& inFi
     return sampleList;
 }
 
-void calculateLocusProbs(LocusMap& locusMap, int sampleSize,float psig) {
+void calculateLocusProbs(LocusMap& locusMap, int sampleSize, float psig) {
     for (int i = 0; i < locusMap.size(); i++) {
         locusMap[i].calculateLocusProbs(sampleSize);
         locusMap[i].calculateAlleleProbs(sampleSize);
-	locusMap[i].calculateE(sampleSize);
-	locusMap[i].isHWE(psig);
+        locusMap[i].calculateE(sampleSize);
+        locusMap[i].isHWE(psig);
     }
-    //locusMap[0].printProbs();
-    //locusMap[0].isHWE(psig);
 }
 
 void calculateLinkage(LocusMap& locusMap, int sampleSize, float psig){
-  for(int i = 0; i<locusMap.size()-1;i++){
-    for(int j = 1; j < locusMap.size();j++){
-      locusMap[i].doLinkageCompares(locusMap[j],sampleSize);
+    for (int i = 0; i < locusMap.size() - 1; i++) {
+        for (int j = 1; j < locusMap.size(); j++) {
+            locusMap[i].doLinkageCompares(locusMap[j], sampleSize, psig);
+        }
     }
-  }
 }
 
 int main(int argc, char* argv[]) {
@@ -53,12 +51,11 @@ int main(int argc, char* argv[]) {
     getline(inFile, line, '\r');
     LocusMap locusMap(line);
     SampleList sampleList = populateLocusMapAndSampleList(locusMap, inFile);
-    calculateLocusProbs(locusMap, sampleList.size()-1,pSignificance);
-    calculateLinkage(locusMap,sampleList.size()-1,pSignificance);
+    calculateLocusProbs(locusMap, sampleList.size() - 1, pSignificance);
+    calculateLinkage(locusMap, sampleList.size() - 1, pSignificance);
     //std::cout << sampleList.size() << std::endl;
     //std::cout << locusMap << std::endl;
 
 
     return 0;
 }
-
