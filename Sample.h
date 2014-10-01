@@ -1,7 +1,7 @@
 #include <cmath>
 #include "LocusMap.h"
 
-typedef std::pair<int, int> Peaks;
+typedef std::pair<double, double> Peaks;
 typedef std::pair<std::string, Key> LocusPeak;
 typedef std::unordered_map<std::string, Key> LocusPeaks;
 
@@ -33,7 +33,7 @@ class Sample {
                 if (!getline(lineStream, curr2, ',')) {
                     break;
                 }
-                auto minAndMax = std::minmax({atoi(curr1.c_str()), atoi(curr2.c_str())});
+                auto minAndMax = std::minmax({atof(curr1.c_str()), atof(curr2.c_str())});
                 Key currPeaks = { minAndMax.first, minAndMax.second };
                 allelePeaks[(*iter).getName()] = currPeaks;
                 iter++;
