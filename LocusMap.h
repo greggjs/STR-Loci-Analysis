@@ -52,6 +52,7 @@ class Locus {
         }
         return os;
     }
+
     public:
         Locus(const std::string name) : name(name) {}
 
@@ -105,18 +106,19 @@ class Locus {
             return eVals;
         }
 
-        void isHWE(float psig){
+        void isHWE(float psig) {
             double critVal = 0;
             double sub,ev,n;
             for(EVALSPoint e : eVals) {
                 ev = e.second;
                 n = locusDist[e.first];
                 sub = n - ev;
-                if(ev != 0)
+                if(ev != 0) {
                     critVal += ((sub * sub) / ev);
+                }
             }
             int alleleNum = this->getAlleleNumber();
-            double df = .5 * (alleleNum) * (alleleNum - 1);
+            double df = 0.5 * (alleleNum) * (alleleNum - 1);
             boost::math::chi_squared mydist(df);
             double pval = boost::math::cdf(mydist, critVal);
             if((1 - pval) < psig) {
@@ -142,8 +144,8 @@ class Locus {
             }
             int alleleNum1 = this->getAlleleNumber();
             int alleleNum2 = l.getAlleleNumber();
-            int sk1 = .5 * alleleNum1 * (alleleNum1 - 1);
-            int sk2 = .5 * alleleNum2 * (alleleNum2 - 1);
+            int sk1 = 0.5 * alleleNum1 * (alleleNum1 - 1);
+            int sk2 = 0.5 * alleleNum2 * (alleleNum2 - 1);
             int df = (sk1 - 1) * (sk2 - 1);
             boost::math::chi_squared mydist(df);
             double pval = boost::math::cdf(mydist, expression);
