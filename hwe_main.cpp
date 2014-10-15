@@ -10,13 +10,20 @@ typedef std::vector<Sample> SampleList;
 SampleList populateLocusMapAndSampleList(LocusMap& locusMap, std::ifstream& inFile) {
     std::string line;
     SampleList sampleList;
+    std::cout << "Populating Locus Map..." << std::endl;
     while (getline(inFile, line, '\r')) {
         Sample curr(line, locusMap);
         int i = 0;
         for (LocusPeak p : curr.getLocusPeaks()) {
             locusMap[i].addLocusPeaks(p.second);
+            for (LocusPeak other : curr.getLocusPeaks()) {
+                if (p.first != other.first) {
+                    locusMap[i].addLocusPair(p.second, other);
+                }
+            }
             i++;
         }
+
         sampleList.push_back(curr);
     }
     return sampleList;
@@ -24,11 +31,6 @@ SampleList populateLocusMapAndSampleList(LocusMap& locusMap, std::ifstream& inFi
 
 void calculateLocusProbs(LocusMap& locusMap, int sampleSize, float psig) {
     for (int i = 0; i < locusMap.size(); i++) {
-        for (Locus other : locusMap.getLocusSet()) {
-            if (locusMap[i] != other) {
-                locusMap[i].addLocusPair(other);
-            }
-        }
         locusMap[i].calculateLocusProbs(sampleSize);
         locusMap[i].calculateAlleleProbs(sampleSize);
         locusMap[i].calculateE(sampleSize);
@@ -36,9 +38,10 @@ void calculateLocusProbs(LocusMap& locusMap, int sampleSize, float psig) {
 }
 
 void calculateHWEandLinkage(LocusMap& locusMap, int sampleSize, float psig){
-    //locusMap[0].doLinkageCompares(locusMap[1], sampleSize, psig);
     for (int i = 0; i < locusMap.size() - 1; i++) {
         locusMap[i].isHWE(psig);
+    }
+    for (int i = 0; i < locusMap.size() - 1; i++) {
         for (int j = i + 1; j < locusMap.size(); j++) {
             locusMap[i].doLinkageCompares(locusMap[j], sampleSize, psig);
         }

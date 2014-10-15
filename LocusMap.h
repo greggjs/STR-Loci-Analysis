@@ -109,19 +109,15 @@ class Locus {
             alleles[peak.second]++;
         }
 
-        void addLocusPair(const Locus& other) {
-            for (LocusDistPoint p : locusDist) {
-                for (LocusDistPoint k : other.locusDist) {
-                    MegaKey currKey = {
-                        p.first.first,
-                        p.first.second,
-                        other.name,
-                        k.first.first,
-                        k.first.second
-                    };
-                    locusPairDist[currKey]++;
-                }
-            }
+        void addLocusPair(const Key curr, const std::pair<std::string, Key> other) {
+            MegaKey currKey = {
+                curr.first,
+                curr.second,
+                other.first,
+                other.second.first,
+                other.second.second
+            };
+            locusPairDist[currKey]++;
         }
 
         LocusProb calculateLocusProbs(double sampleSize) {
@@ -194,7 +190,7 @@ class Locus {
                     int actSeen = locusPairDist[actSeenKey];
                     double expectedSeen = big1 * big2 * sampleSize;
                     double square = (actSeen - expectedSeen);
-                    std::cout << actSeen << " " << expectedSeen << std::endl;
+                    //std::cout << actSeen << " " << expectedSeen << std::endl;
                     expression += ((square * square) / expectedSeen);
                 }
             }
@@ -206,7 +202,7 @@ class Locus {
             boost::math::chi_squared mydist(df);
             double pval = boost::math::cdf(mydist, expression);
             if ((1 - pval) < psig) {
-                std::cout << this->name << " and " <<  l.name << "are likely linked " << expression << " " << df << std::endl;
+                std::cout << this->name << " and " <<  l.name << "are likely linked " << std::endl;
             }
         }
 
