@@ -9,6 +9,33 @@
 #include <unordered_map>
 #include <boost/math/distributions/chi_squared.hpp>
 
+struct MegaKey {
+    double locus1;
+    double locus2;
+    std::string otherLocusName;
+    double otherLocus1;
+    double otherLocus2;
+};
+
+struct MegaKeyHash {
+    std::size_t operator()(const MegaKey& k) const {
+        return std::hash<double>() (k.locus1) ^
+               (std::hash<double>() (k.locus2) << 1) ^
+               (std::hash<std::string>() (k.otherLocusName) << 2) ^
+               (std::hash<double>() (k.otherLocus1) << 3) ^
+               (std::hash<double>() (k.otherLocus2) << 4);
+    }
+};
+
+struct MegaKeyEqual {
+    bool operator()(const MegaKey& lhs, const MegaKey& rhs) const {
+        return lhs.locus1 == rhs.locus1 && lhs.locus2 == rhs.locus2
+            && lhs.otherLocusName == rhs.otherLocusName
+            && lhs.otherLocus1 == rhs.otherLocus1
+            && lhs.otherLocus2 == rhs.otherLocus2;
+    }
+};
+
 struct Key {
     double first;
     double second;
@@ -29,12 +56,16 @@ struct KeyEqual {
 
 typedef std::pair<Key, int> LocusDistPoint;
 typedef std::pair<Key, double> LocusProbPoint;
-typedef std::pair<Key,double> EVALSPoint;
+typedef std::pair<Key, double> EVALSPoint;
 typedef std::pair<double, int> AlleleDistPoint;
 typedef std::pair<double, double> AlleleProbPoint;
+typedef std::pair<MegaKey, int> LocusPairDistPoint;
+typedef std::pair<MegaKey, double> LocusPairProbPoint;
 typedef std::unordered_map<Key, int, KeyHash, KeyEqual> LocusDist;
 typedef std::unordered_map<Key, double, KeyHash, KeyEqual> LocusProb;
-typedef std::unordered_map<Key,double, KeyHash, KeyEqual> EVALS;
+typedef std::unordered_map<Key, double, KeyHash, KeyEqual> EVALS;
+typedef std::unordered_map<MegaKey, int, MegaKeyHash, MegaKeyEqual> LocusPairDist;
+typedef std::unordered_map<MegaKey, double, MegaKeyHash, MegaKeyEqual> LocusPairProb;
 typedef std::unordered_map<double, int> AlleleDist;
 typedef std::unordered_map<double, double> AlleleProb;
 
@@ -64,6 +95,10 @@ class Locus {
             return name == locus.name;
         }
 
+        bool operator!=(const Locus& locus) const {
+            return name != locus.name;
+        }
+
         std::string getName() const {
             return name;
         }
@@ -72,6 +107,21 @@ class Locus {
             locusDist[peak]++;
             alleles[peak.first]++;
             alleles[peak.second]++;
+        }
+
+        void addLocusPair(const Locus& other) {
+            for (LocusDistPoint p : locusDist) {
+                for (LocusDistPoint k : other.locusDist) {
+                    MegaKey currKey = {
+                        p.first.first,
+                        p.first.second,
+                        other.name,
+                        k.first.first,
+                        k.first.second
+                    };
+                    locusPairDist[currKey]++;
+                }
+            }
         }
 
         LocusProb calculateLocusProbs(double sampleSize) {
@@ -126,31 +176,37 @@ class Locus {
             }
         }
 
-        void doLinkageCompares(Locus& l,int sampleSize, float psig){
-            double expression = 0;
+        void doLinkageCompares(Locus& l, int sampleSize, float psig){
             this->calculateLocusProbs(sampleSize);
             l.calculateLocusProbs(sampleSize);
+            double expression = 0;
             for(LocusProbPoint bigP1 : this->locusProb) {
-                int actualNumSeen1 = this->locusDist[bigP1.first];
                 double big1 = bigP1.second;
                 for(LocusProbPoint bigP2 : l.locusProb) {
                     double big2 = bigP2.second;
-                    int actualNumSeen2 = l.locusDist[bigP2.first];
-                    int actSeen = actualNumSeen1 + actualNumSeen2;
+                    MegaKey actSeenKey = {
+                        bigP1.first.first,
+                        bigP1.first.second,
+                        l.name,
+                        bigP2.first.first,
+                        bigP2.first.second
+                    };
+                    int actSeen = locusPairDist[actSeenKey];
                     double expectedSeen = big1 * big2 * sampleSize;
                     double square = (actSeen - expectedSeen);
+                    std::cout << actSeen << " " << expectedSeen << std::endl;
                     expression += ((square * square) / expectedSeen);
                 }
             }
-            int alleleNum1 = this->getAlleleNumber();
-            int alleleNum2 = l.getAlleleNumber();
-            int sk1 = 0.5 * alleleNum1 * (alleleNum1 - 1);
-            int sk2 = 0.5 * alleleNum2 * (alleleNum2 - 1);
-            int df = (sk1 - 1) * (sk2 - 1);
+            double alleleNum1 = this->getAlleleNumber();
+            double alleleNum2 = l.getAlleleNumber();
+            double sk1 = 0.5 * alleleNum1 * (alleleNum1 - 1);
+            double sk2 = 0.5 * alleleNum2 * (alleleNum2 - 1);
+            double df = (sk1 - 1) * (sk2 - 1);
             boost::math::chi_squared mydist(df);
             double pval = boost::math::cdf(mydist, expression);
             if ((1 - pval) < psig) {
-                std::cout << this->name << " and " <<  l.name << "are likely linked" << std::endl;
+                std::cout << this->name << " and " <<  l.name << "are likely linked " << expression << " " << df << std::endl;
             }
         }
 
@@ -190,10 +246,10 @@ class Locus {
             }
         }
 
-        int getAlleleNumber(){
-            int count = 0;
+        double getAlleleNumber(){
+            double count = 0.0;
             for(AlleleProbPoint allele : alleleProb) {
-                count+=1;
+                count+=1.0;
             }
             return count;
         }
@@ -207,6 +263,8 @@ class Locus {
         AlleleProb alleleProb;
         EVALS eVals;
         EVALS eValsL;
+        LocusPairDist locusPairDist;
+        LocusPairProb locusPairProb;
 
 };
 

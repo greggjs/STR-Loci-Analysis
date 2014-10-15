@@ -24,16 +24,22 @@ SampleList populateLocusMapAndSampleList(LocusMap& locusMap, std::ifstream& inFi
 
 void calculateLocusProbs(LocusMap& locusMap, int sampleSize, float psig) {
     for (int i = 0; i < locusMap.size(); i++) {
+        for (Locus other : locusMap.getLocusSet()) {
+            if (locusMap[i] != other) {
+                locusMap[i].addLocusPair(other);
+            }
+        }
         locusMap[i].calculateLocusProbs(sampleSize);
         locusMap[i].calculateAlleleProbs(sampleSize);
         locusMap[i].calculateE(sampleSize);
-        locusMap[i].isHWE(psig);
     }
 }
 
-void calculateLinkage(LocusMap& locusMap, int sampleSize, float psig){
+void calculateHWEandLinkage(LocusMap& locusMap, int sampleSize, float psig){
+    //locusMap[0].doLinkageCompares(locusMap[1], sampleSize, psig);
     for (int i = 0; i < locusMap.size() - 1; i++) {
-        for (int j = 1; j < locusMap.size(); j++) {
+        locusMap[i].isHWE(psig);
+        for (int j = i + 1; j < locusMap.size(); j++) {
             locusMap[i].doLinkageCompares(locusMap[j], sampleSize, psig);
         }
     }
@@ -52,7 +58,7 @@ int main(int argc, char* argv[]) {
     LocusMap locusMap(line);
     SampleList sampleList = populateLocusMapAndSampleList(locusMap, inFile);
     calculateLocusProbs(locusMap, sampleList.size() - 1, pSignificance);
-    calculateLinkage(locusMap, sampleList.size() - 1, pSignificance);
+    calculateHWEandLinkage(locusMap, sampleList.size() - 1, pSignificance);
     //std::cout << sampleList.size() << std::endl;
     //std::cout << locusMap << std::endl;
 
