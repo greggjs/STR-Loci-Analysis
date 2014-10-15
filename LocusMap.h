@@ -164,7 +164,7 @@ class Locus {
                 }
             }
             int alleleNum = this->getAlleleNumber();
-            double df = 0.5 * (alleleNum) * (alleleNum - 1);
+            double df = 0.5 * (alleleNum) * (alleleNum + 1);
             boost::math::chi_squared mydist(df);
             double pval = boost::math::cdf(mydist, critVal);
             if((1 - pval) < psig) {
@@ -193,8 +193,8 @@ class Locus {
             }
             double alleleNum1 = this->getAlleleNumber();
             double alleleNum2 = l.getAlleleNumber();
-            double sk1 = 0.5 * alleleNum1 * (alleleNum1 - 1);
-            double sk2 = 0.5 * alleleNum2 * (alleleNum2 - 1);
+            double sk1 = 0.5 * alleleNum1 * (alleleNum1 + 1);
+            double sk2 = 0.5 * alleleNum2 * (alleleNum2 + 1);
             double df = (sk1 - 1) * (sk2 - 1);
             boost::math::chi_squared mydist(df);
             double pval = boost::math::cdf(mydist, expression);
