@@ -173,8 +173,6 @@ class Locus {
         }
 
         void doLinkageCompares(Locus& l, int sampleSize, float psig){
-            this->calculateLocusProbs(sampleSize);
-            l.calculateLocusProbs(sampleSize);
             double expression = 0;
             for(LocusProbPoint bigP1 : this->locusProb) {
                 double big1 = bigP1.second;
@@ -190,7 +188,6 @@ class Locus {
                     int actSeen = locusPairDist[actSeenKey];
                     double expectedSeen = big1 * big2 * sampleSize;
                     double square = (actSeen - expectedSeen);
-                    //std::cout << actSeen << " " << expectedSeen << std::endl;
                     expression += ((square * square) / expectedSeen);
                 }
             }
@@ -202,7 +199,7 @@ class Locus {
             boost::math::chi_squared mydist(df);
             double pval = boost::math::cdf(mydist, expression);
             if ((1 - pval) < psig) {
-                std::cout << this->name << " and " <<  l.name << "are likely linked " << std::endl;
+                std::cout << this->name << " and " <<  l.name << " are likely linked " << std::endl;
             }
         }
 
@@ -243,11 +240,7 @@ class Locus {
         }
 
         double getAlleleNumber(){
-            double count = 0.0;
-            for(AlleleProbPoint allele : alleleProb) {
-                count+=1.0;
-            }
-            return count;
+            return (double) alleleProb.size();
         }
 
 

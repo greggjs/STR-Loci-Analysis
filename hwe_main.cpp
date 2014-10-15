@@ -14,11 +14,12 @@ SampleList populateLocusMapAndSampleList(LocusMap& locusMap, std::ifstream& inFi
     while (getline(inFile, line, '\r')) {
         Sample curr(line, locusMap);
         int i = 0;
-        for (LocusPeak p : curr.getLocusPeaks()) {
-            locusMap[i].addLocusPeaks(p.second);
-            for (LocusPeak other : curr.getLocusPeaks()) {
-                if (p.first != other.first) {
-                    locusMap[i].addLocusPair(p.second, other);
+        std::vector<LocusPeak> locusPeaks = curr.getLocusPeaks();
+        for (int j = 0; j < locusPeaks.size(); j++) {
+            locusMap[i].addLocusPeaks(locusPeaks[j].second);
+            for (int k = j + 1; k < locusPeaks.size(); k++) {
+                if (locusPeaks[j].first != locusPeaks[k].first) {
+                    locusMap[i].addLocusPair(locusPeaks[j].second, locusPeaks[k]);
                 }
             }
             i++;
